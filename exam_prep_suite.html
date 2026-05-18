@@ -1,0 +1,1276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ExamAce — Ultimate Study Suite</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #12121a;
+    --bg3: #1a1a26;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.13);
+    --text: #f0f0f8;
+    --muted: #888899;
+    --accent: #7c6ff7;
+    --accent2: #4fc8a0;
+    --accent3: #f7b067;
+    --accent4: #f76fa0;
+    --accent5: #67c5f7;
+    --red: #f76f6f;
+    --green: #4fc8a0;
+    --yellow: #f7b067;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  
+  /* SIDEBAR */
+  #sidebar {
+    position: fixed; left: 0; top: 0; bottom: 0; width: 220px;
+    background: var(--bg2); border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; z-index: 100; overflow-y: auto;
+  }
+  .logo { padding: 24px 20px 16px; font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; letter-spacing: -0.5px; }
+  .logo span { color: var(--accent); }
+  .nav-section { padding: 8px 12px 4px; font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); font-weight: 500; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 16px; margin: 1px 8px; border-radius: 8px; cursor: pointer; font-size: 13.5px; color: var(--muted); transition: all 0.15s; border: none; background: none; width: calc(100% - 16px); text-align: left; }
+  .nav-item:hover { background: var(--bg3); color: var(--text); }
+  .nav-item.active { background: rgba(124,111,247,0.15); color: var(--accent); font-weight: 500; }
+  .nav-item .icon { font-size: 16px; width: 20px; text-align: center; }
+  .xp-bar-wrap { padding: 16px 16px 20px; margin-top: auto; border-top: 1px solid var(--border); }
+  .xp-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+  .xp-track { height: 6px; background: var(--bg3); border-radius: 99px; overflow: hidden; }
+  .xp-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 99px; transition: width 0.6s ease; }
+  .streak-badge { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--accent3); margin-top: 10px; }
+
+  /* MAIN */
+  #main { margin-left: 220px; min-height: 100vh; }
+  .page { display: none; padding: 32px 36px; animation: fadeIn 0.2s ease; }
+  .page.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  /* PAGE HEADER */
+  .page-header { margin-bottom: 28px; }
+  .page-header h1 { font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 700; letter-spacing: -0.5px; }
+  .page-header p { color: var(--muted); font-size: 14px; margin-top: 4px; }
+
+  /* CARDS */
+  .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 20px 22px; }
+  .card + .card { margin-top: 14px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+  .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+
+  /* STAT CARDS */
+  .stat-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 18px; }
+  .stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
+  .stat-val { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 700; margin-top: 4px; }
+  .stat-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  /* BUTTONS */
+  .btn { display: inline-flex; align-items: center; gap: 7px; padding: 9px 18px; border-radius: 8px; font-size: 13.5px; font-weight: 500; cursor: pointer; border: none; transition: all 0.15s; font-family: inherit; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: #9088f9; }
+  .btn-secondary { background: var(--bg3); color: var(--text); border: 1px solid var(--border2); }
+  .btn-secondary:hover { background: rgba(255,255,255,0.07); }
+  .btn-success { background: var(--green); color: #0a0a0f; }
+  .btn-danger { background: var(--red); color: #fff; }
+  .btn-sm { padding: 6px 12px; font-size: 12px; }
+  .btn-lg { padding: 12px 24px; font-size: 15px; }
+
+  /* INPUTS */
+  input[type=text], input[type=number], textarea, select {
+    background: var(--bg3); border: 1px solid var(--border2); border-radius: 8px;
+    color: var(--text); font-family: inherit; font-size: 14px; padding: 10px 14px;
+    outline: none; width: 100%; transition: border 0.15s;
+  }
+  input:focus, textarea:focus, select:focus { border-color: var(--accent); }
+  textarea { resize: vertical; min-height: 80px; }
+  label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; font-weight: 500; }
+  .form-group { margin-bottom: 14px; }
+
+  /* TAGS */
+  .tag { display: inline-block; padding: 3px 10px; border-radius: 99px; font-size: 11px; font-weight: 500; }
+  .tag-purple { background: rgba(124,111,247,0.2); color: var(--accent); }
+  .tag-green { background: rgba(79,200,160,0.2); color: var(--green); }
+  .tag-yellow { background: rgba(247,176,103,0.2); color: var(--yellow); }
+  .tag-red { background: rgba(247,111,111,0.2); color: var(--red); }
+  .tag-blue { background: rgba(103,197,247,0.2); color: var(--accent5); }
+
+  /* PROGRESS */
+  .progress-track { height: 8px; background: var(--bg3); border-radius: 99px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 99px; transition: width 0.5s ease; }
+
+  /* FLASHCARD */
+  .flashcard-area { display: flex; flex-direction: column; align-items: center; padding: 20px 0; }
+  .flashcard-wrap { perspective: 1200px; width: 100%; max-width: 560px; height: 260px; }
+  .flashcard { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.55s cubic-bezier(.4,0,.2,1); cursor: pointer; }
+  .flashcard.flipped { transform: rotateY(180deg); }
+  .card-face { position: absolute; inset: 0; backface-visibility: hidden; background: var(--bg2); border: 1px solid var(--border2); border-radius: 18px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px; text-align: center; }
+  .card-face.back { transform: rotateY(180deg); border-color: var(--accent); }
+  .card-face .face-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); margin-bottom: 16px; }
+  .card-face .face-text { font-size: 18px; font-weight: 500; line-height: 1.5; }
+  .fc-controls { display: flex; gap: 12px; margin-top: 20px; }
+  .fc-rating { display: flex; gap: 10px; margin-top: 14px; }
+  .fc-counter { font-size: 13px; color: var(--muted); margin-top: 14px; }
+
+  /* QUIZ */
+  .quiz-question { font-size: 18px; font-weight: 500; margin-bottom: 20px; line-height: 1.5; }
+  .quiz-opts { display: flex; flex-direction: column; gap: 10px; }
+  .quiz-opt { background: var(--bg3); border: 1px solid var(--border2); border-radius: 10px; padding: 14px 18px; cursor: pointer; font-size: 14px; transition: all 0.15s; text-align: left; color: var(--text); font-family: inherit; }
+  .quiz-opt:hover:not(:disabled) { border-color: var(--accent); background: rgba(124,111,247,0.1); }
+  .quiz-opt.correct { border-color: var(--green); background: rgba(79,200,160,0.12); }
+  .quiz-opt.wrong { border-color: var(--red); background: rgba(247,111,111,0.12); }
+  .quiz-feedback { margin-top: 16px; padding: 12px 16px; border-radius: 10px; font-size: 14px; }
+
+  /* TIMER */
+  .timer-display { font-family: 'DM Mono', monospace; font-size: 48px; font-weight: 500; letter-spacing: 4px; color: var(--accent); }
+  .timer-session-list { margin-top: 16px; }
+  .timer-session { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+
+  /* PLANNER */
+  .planner-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-bottom: 14px; }
+  .day-box { background: var(--bg3); border-radius: 8px; padding: 8px; min-height: 70px; border: 1px solid var(--border); }
+  .day-box.today { border-color: var(--accent); }
+  .day-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+  .day-task { font-size: 11px; background: rgba(124,111,247,0.2); color: var(--accent); padding: 2px 6px; border-radius: 4px; margin-bottom: 2px; cursor: pointer; }
+  .day-task.done { background: rgba(79,200,160,0.2); color: var(--green); text-decoration: line-through; opacity: 0.6; }
+
+  /* NOTES */
+  .notes-list { display: flex; flex-direction: column; gap: 10px; }
+  .note-card { background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; cursor: pointer; transition: border 0.15s; }
+  .note-card:hover { border-color: var(--border2); }
+  .note-title { font-size: 14px; font-weight: 500; }
+  .note-preview { font-size: 12px; color: var(--muted); margin-top: 4px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .note-meta { font-size: 11px; color: var(--muted); margin-top: 8px; }
+
+  /* FORMULA SHEET */
+  .formula-item { background: var(--bg3); border-radius: 10px; padding: 14px 16px; margin-bottom: 10px; border-left: 3px solid var(--accent); }
+  .formula-text { font-family: 'DM Mono', monospace; font-size: 16px; color: var(--accent); margin-bottom: 6px; }
+  .formula-desc { font-size: 13px; color: var(--muted); }
+
+  /* MIND MAP (visual) */
+  #mindmap-canvas { width: 100%; height: 360px; background: var(--bg3); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; position: relative; }
+
+  /* WRONG ANSWERS */
+  .wrong-item { display: flex; justify-content: space-between; align-items: flex-start; padding: 12px 0; border-bottom: 1px solid var(--border); gap: 16px; }
+  .wrong-q { font-size: 13.5px; flex: 1; }
+  .wrong-ans { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  /* PROGRESS ANALYTICS */
+  .bar-chart { display: flex; align-items: flex-end; gap: 8px; height: 100px; margin-top: 14px; }
+  .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .bar-col .bar { width: 100%; border-radius: 4px 4px 0 0; transition: height 0.5s ease; min-height: 3px; }
+  .bar-col .bar-label { font-size: 10px; color: var(--muted); }
+
+  /* POMODORO EXTRA */
+  .pomodoro-ring { width: 160px; height: 160px; margin: 0 auto; position: relative; }
+  .pomodoro-ring svg { transform: rotate(-90deg); }
+  .pomodoro-ring .center-time { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: 'DM Mono', monospace; }
+  .pomodoro-ring .ct-time { font-size: 30px; font-weight: 500; color: var(--text); }
+  .pomodoro-ring .ct-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+
+  /* CONCENTRATION */
+  .conc-toggle { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .toggle-label { font-size: 14px; }
+  .toggle-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .switch { position: relative; display: inline-block; width: 40px; height: 22px; }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .slider-sw { position: absolute; cursor: pointer; inset: 0; background: var(--bg3); border-radius: 99px; transition: .2s; border: 1px solid var(--border2); }
+  .slider-sw:before { content: ''; position: absolute; height: 16px; width: 16px; left: 2px; bottom: 2px; background: var(--muted); border-radius: 50%; transition: .2s; }
+  input:checked + .slider-sw { background: rgba(124,111,247,0.3); border-color: var(--accent); }
+  input:checked + .slider-sw:before { transform: translateX(18px); background: var(--accent); }
+
+  /* Concept Dictionary */
+  .concept-item { background: var(--bg3); border-radius: 10px; padding: 14px 16px; margin-bottom: 10px; border-left: 3px solid var(--accent5); }
+  .concept-term { font-size: 15px; font-weight: 600; color: var(--accent5); margin-bottom: 5px; }
+  .concept-def { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 99px; }
+
+  /* FEATURE BADGE */
+  .feature-num { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; background: rgba(124,111,247,0.2); color: var(--accent); font-size: 11px; font-weight: 700; margin-right: 8px; }
+  
+  /* HEADER BAR */
+  .top-bar { height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 36px; border-bottom: 1px solid var(--border); background: var(--bg); position: sticky; top: 0; z-index: 50; }
+  .top-bar h2 { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 600; }
+  .top-actions { display: flex; gap: 10px; align-items: center; }
+  .avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent2)); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff; }
+
+  /* NOTIFICATION */
+  #toast { position: fixed; bottom: 24px; right: 24px; background: var(--bg2); border: 1px solid var(--border2); color: var(--text); padding: 12px 18px; border-radius: 10px; font-size: 13.5px; z-index: 9999; opacity: 0; transform: translateY(10px); transition: all 0.3s; pointer-events: none; }
+  #toast.show { opacity: 1; transform: none; }
+  #toast.success { border-color: var(--green); color: var(--green); }
+  #toast.warn { border-color: var(--yellow); color: var(--yellow); }
+
+  /* SUBJECT COLORS */
+  .subj-math { --sc: #7c6ff7; }
+  .subj-sci { --sc: #4fc8a0; }
+  .subj-hist { --sc: #f7b067; }
+  .subj-lit { --sc: #f76fa0; }
+  .subj-lang { --sc: #67c5f7; }
+  .subject-pill { display: inline-block; padding: 4px 12px; border-radius: 99px; font-size: 12px; font-weight: 500; background: rgba(var(--sc-rgb), 0.15); color: var(--sc); border: 1px solid rgba(var(--sc-rgb), 0.3); }
+
+  /* DIVIDER */
+  hr { border: none; border-top: 1px solid var(--border); margin: 18px 0; }
+
+  .empty-state { text-align: center; padding: 40px; color: var(--muted); font-size: 14px; }
+  .empty-state .icon { font-size: 36px; margin-bottom: 12px; }
+</style>
+</head>
+<body>
+
+<div id="toast"></div>
+
+<!-- SIDEBAR -->
+<nav id="sidebar">
+  <div class="logo">Exam<span>Ace</span> ✦</div>
+  
+  <div class="nav-section">Study Tools</div>
+  <button class="nav-item active" onclick="nav('dashboard')"><span class="icon">📊</span> Dashboard</button>
+  <button class="nav-item" onclick="nav('flashcards')"><span class="icon">🃏</span> Flashcards</button>
+  <button class="nav-item" onclick="nav('quiz')"><span class="icon">❓</span> Quiz Mode</button>
+  <button class="nav-item" onclick="nav('notes')"><span class="icon">📝</span> Smart Notes</button>
+  <button class="nav-item" onclick="nav('formulas')"><span class="icon">🔢</span> Formula Sheet</button>
+
+  <div class="nav-section">Productivity</div>
+  <button class="nav-item" onclick="nav('planner')"><span class="icon">📅</span> Study Planner</button>
+  <button class="nav-item" onclick="nav('timer')"><span class="icon">⏱</span> Pomodoro Timer</button>
+  <button class="nav-item" onclick="nav('goals')"><span class="icon">🎯</span> Goals & Targets</button>
+
+  <div class="nav-section">Analysis</div>
+  <button class="nav-item" onclick="nav('analytics')"><span class="icon">📈</span> Analytics</button>
+  <button class="nav-item" onclick="nav('wrong')"><span class="icon">⚠️</span> Weak Points</button>
+  <button class="nav-item" onclick="nav('mindmap')"><span class="icon">🗺</span> Mind Map</button>
+
+  <div class="nav-section">More</div>
+  <button class="nav-item" onclick="nav('dictionary')"><span class="icon">📖</span> Concept Dictionary</button>
+  <button class="nav-item" onclick="nav('focus')"><span class="icon">🎧</span> Focus Mode</button>
+  <button class="nav-item" onclick="nav('achievements')"><span class="icon">🏆</span> Achievements</button>
+
+  <div class="xp-bar-wrap">
+    <div class="xp-label"><span>XP Progress</span><span id="xp-count">0 / 500</span></div>
+    <div class="xp-track"><div class="xp-fill" id="xp-fill" style="width:0%"></div></div>
+    <div class="streak-badge">🔥 <strong id="streak-num">0</strong>-day streak</div>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div id="main">
+
+<!-- TOP BAR -->
+<div class="top-bar">
+  <h2 id="page-title">Dashboard</h2>
+  <div class="top-actions">
+    <span id="live-clock" style="font-family:'DM Mono',monospace;font-size:13px;color:var(--muted)"></span>
+    <div class="avatar">A</div>
+  </div>
+</div>
+
+<!-- ─── PAGE: DASHBOARD ─── -->
+<div id="page-dashboard" class="page active">
+  <div class="page-header">
+    <h1 id="dash-greeting">Loading...</h1>
+    <p id="dash-subgreeting"></p>
+  </div>
+  <div class="grid4" style="margin-bottom:20px">
+    <div class="stat-card"><div class="stat-label">Cards Reviewed</div><div class="stat-val" id="stat-cards" style="color:var(--accent)">0</div><div class="stat-sub">this session</div></div>
+    <div class="stat-card"><div class="stat-label">Quiz Accuracy</div><div class="stat-val" id="stat-accuracy" style="color:var(--green)">—</div><div class="stat-sub" id="stat-accuracy-sub">no quizzes yet</div></div>
+    <div class="stat-card"><div class="stat-label">Tasks Done</div><div class="stat-val" id="stat-tasks" style="color:var(--yellow)">0</div><div class="stat-sub" id="stat-tasks-sub">of 0 tasks</div></div>
+    <div class="stat-card"><div class="stat-label">XP Earned</div><div class="stat-val" id="stat-xp" style="color:var(--accent4)">0</div><div class="stat-sub" id="stat-level">Level 1</div></div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <div style="font-weight:600;font-size:14px">📚 Subject Progress</div>
+        <span class="tag tag-purple">4 subjects</span>
+      </div>
+      <div id="subj-progress"></div>
+    </div>
+    <div class="card">
+      <div style="font-weight:600;font-size:14px;margin-bottom:14px">📆 Today's Tasks</div>
+      <div id="today-tasks"></div>
+      <button class="btn btn-secondary btn-sm" style="margin-top:12px" onclick="nav('planner')">View Full Planner →</button>
+    </div>
+  </div>
+
+  <div class="grid3" style="margin-top:14px">
+    <div class="card" style="cursor:pointer" onclick="nav('flashcards')">
+      <div style="font-size:28px;margin-bottom:8px">🃏</div>
+      <div style="font-weight:600;font-size:14px">Flashcards</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:4px" id="dash-fc-count">0 cards in your deck</div>
+    </div>
+    <div class="card" style="cursor:pointer" onclick="nav('quiz')">
+      <div style="font-size:28px;margin-bottom:8px">❓</div>
+      <div style="font-weight:600;font-size:14px">Quick Quiz</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:4px">Multiple-choice practice tests</div>
+    </div>
+    <div class="card" style="cursor:pointer" onclick="nav('timer')">
+      <div style="font-size:28px;margin-bottom:8px">⏱</div>
+      <div style="font-weight:600;font-size:14px">Pomodoro Timer</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:4px">Start a 25-min session</div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── PAGE: FLASHCARDS ─── -->
+<div id="page-flashcards" class="page">
+  <div class="page-header"><h1>🃏 Flashcards <span class="tag tag-purple" style="font-size:13px;vertical-align:middle">Feature #1</span></h1><p>Spaced repetition system — cards you struggle with appear more often</p></div>
+  <div class="grid2" style="margin-bottom:20px">
+    <div class="card">
+      <div style="font-weight:600;font-size:14px;margin-bottom:12px">Create New Card</div>
+      <div class="form-group"><label>Question / Front</label><textarea id="fc-q" rows="2" placeholder="e.g. What is Newton's 2nd Law?"></textarea></div>
+      <div class="form-group"><label>Answer / Back</label><textarea id="fc-a" rows="2" placeholder="e.g. F = ma (Force = mass × acceleration)"></textarea></div>
+      <div class="form-group"><label>Subject</label>
+        <select id="fc-subj">
+          <option>Mathematics</option><option>Science</option><option>History</option><option>Literature</option><option>Language</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" onclick="addFlashcard()">+ Add Card</button>
+    </div>
+    <div class="card">
+      <div style="font-weight:600;font-size:14px;margin-bottom:6px">Stats</div>
+      <div class="grid2" style="gap:10px;margin-bottom:12px">
+        <div class="stat-card"><div class="stat-label">Total</div><div class="stat-val" id="fc-total" style="font-size:22px">3</div></div>
+        <div class="stat-card"><div class="stat-label">Mastered</div><div class="stat-val" style="font-size:22px;color:var(--green)" id="fc-mastered">0</div></div>
+      </div>
+      <div style="font-size:13px;color:var(--muted)">Rate each card after flipping to improve your spaced repetition schedule.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div style="font-weight:600;font-size:14px">Study Cards</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-secondary btn-sm" onclick="shuffleCards()">🔀 Shuffle</button>
+        <button class="btn btn-secondary btn-sm" onclick="resetCards()">↺ Reset</button>
+      </div>
+    </div>
+    <div class="flashcard-area">
+      <div class="flashcard-wrap">
+        <div class="flashcard" id="flashcard" onclick="flipCard()">
+          <div class="card-face front">
+            <div class="face-label">Question — click to reveal</div>
+            <div class="face-text" id="fc-front">Add a card to start!</div>
+          </div>
+          <div class="card-face back">
+            <div class="face-label">Answer</div>
+            <div class="face-text" id="fc-back">—</div>
+          </div>
+        </div>
+      </div>
+      <div class="fc-counter" id="fc-counter">Card — / —</div>
+      <div class="fc-rating">
+        <button class="btn btn-danger btn-sm" onclick="rateCard('hard')">😓 Hard</button>
+        <button class="btn btn-secondary btn-sm" onclick="rateCard('ok')">😐 Okay</button>
+        <button class="btn btn-success btn-sm" onclick="rateCard('easy')">😄 Easy</button>
+      </div>
+      <div class="fc-controls">
+        <button class="btn btn-secondary" onclick="prevCard()">← Prev</button>
+        <button class="btn btn-primary" onclick="nextCard()">Next →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── PAGE: QUIZ ─── -->
+<div id="page-quiz" class="page">
+  <div class="page-header"><h1>❓ Quiz Mode <span class="tag tag-green" style="font-size:13px;vertical-align:middle">Feature #2</span></h1><p>Test yourself with multiple-choice questions and get instant feedback</p></div>
+  <div class="grid2" style="margin-bottom:20px">
+    <div class="card">
+      <div style="font-weight:600;font-size:14px;margin-bottom:12px">Configure Quiz</div>
+      <div class="form-group"><label>Subject</label>
+        <select id="quiz-subj">
+          <option>Mathematics</option><option>Science</option><option>History</option><option>Literature</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Number of Questions</label>
+        <select id="quiz-num"><option>5</option><option>10</option><option>20</option></select>
+      </div>
+      <div class="form-group"><label>Difficulty</label>
+        <select id="quiz-diff"><option>Easy</option><option>Medium</option><option>Hard</option></select>
+      </div>
+      <button class="btn btn-primary" onclick="startQuiz()">▶ Start Quiz</button>
+    </div>
+    <div class="card">
+      <div style="font-weight:600;font-size:14px;margin-bottom:14px">📊 Quiz History</div>
+      <div id="quiz-history"><div style="color:var(--muted);font-size:13px;padding:10px 0">No quizzes taken yet — start one!</div></div>
+    </div>
+  </div>
+
+  <div class="card" id="quiz-area">
+    <div style="text-align:center;color:var(--muted);padding:30px 0;font-size:14px">Configure and start a quiz above ☝️</div>
+  </div>
+</div>
+
+<!-- ─── PAGE: NOTES ─── -->
+<div id="page-notes" class="page">
+  <div class="page-header"><h1>📝 Smart Notes <span class="tag tag-blue" style="font-size:13px;vertical-align:middle">Feature #3</span></h1><p>Create, organize, and search your study notes</p></div>
+  <div class="grid2">
+    <div>
+      <div class="card" style="margin-bottom:14px">
+        <div style="font-weight:600;font-size:14px;margin-bottom:12px">New Note</div>
+        <div class="form-group"><label>Title</label><input type="text" id="note-title" placeholder="e.g. Chapter 4 — Cell Division"></div>
+        <div class="form-group"><label>Subject</label>
+          <select id="note-subj"><option>Mathematics</option><option>Science</option><option>History</option><option>Literature</option></select>
+        </div>
+        <div class="form-group"><label>Content</label><textarea id="note-content" rows="5" placeholder="Write your notes here... Use markdown-like formatting"></textarea></div>
+        <button class="btn btn-primary" onclick="saveNote()">💾 Save Note</button>
+      </div>
+      <div class="card">
+        <div style="font-weight:600;font-size:14px;margin-bottom:10px">🔍 Search Notes</div>
+        <input type="text" id="note-search" placeholder="Search by title or content..." oninput="searchNotes()">
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <div style="font-weight:600;font-size:14px;margin-bottom:14px">My Notes</div>
+        <div class="notes-list" id="notes-list"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── PAGE: FORMULAS ─── -->
+<div id="page-formulas" class="page">
+  <div class="page-header"><h1>🔢 Formula Sheet <span class="tag tag-yellow" style="font-size:13px;vertical-align:middle">Feature #4</span></h1><p>Quick reference for all your key formulas and definitions</p></div>
+  <div class="grid2">
+    <div class="card">
+      <div style="font-weight:600;font-size:14px;margin-bottom:12px">Add Formula</div>
+      <div class="form-group"><label>Formula</label><input type="text" id="f-formula" placeholder="e.g. E = mc²"></div>
+      <div class="form-group"><label>Description</label><input type="text" id="f-desc" placeholder="e.g. Mass-energy equivalence"></div>
+      <div class="form-group"><label>Subject</label>
+        <select id="f-subj"><option>Mathematics</option><option>Physics</option><option>Chemistry</option><option>Biology</option></select>
+      </div>
+      <button class="btn btn-primary" onclick="addFormula()">+ Add</button>
+    </div>
+    <div class="card">
+      <div style="font-weight:600;font-size:14px;margin-bottom:14px">Formula Reference</div>
+      <input type="text" id="formula-search" placeholder="Search formulas..." oninput="filterFormulas()" style="margin-bottom:14px">
+      <div id="formula-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── PAGE: PLANNER ─── -->
+<div id="page-planner" class="page">
+  <div class="page-header"><h1>📅 Study Planner <span class="tag tag-purple" style="font-size:13px;vertical-align:middle">Feature #5</span></h1><p>Plan your study sessions and track what needs to be done</p></div>
+  <div class="card" style="margin-bottom:14px">
+    <div style="font-weight:600;font-size:14px;margin-bottom:14px">Week View — <span id="week-range"></span></div>
+    <div class="planner-grid" id="week-grid"></div>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <div style="font-weight:600;font-size:14px;margin-bottom:12px">Add Task</div>
+      <div class="form-group"><label>Task</label><input type="text" id="task-input" placeholder="e.g. Review Chapter 5"></div>
+      <div class="form-group"><label>Day</label>
+        <select id="task-day"><option>Mon</option><option>Tue</option><option>Wed</option><option>Thu</option><option>Fri</option><option>Sat</option><option>Sun</option></select>
+      </div>
+      <div class="form-group"><label>Priority</label>
+        <select id="task-priority"><option>High</option><option>Medium</option><option>Low</option></select>
+      </div>
+      <button class="btn btn-primary" onclick="addTask()">+ Add Task</button>
+    </div>
+    <div class="card">
+      <div style="font-weight:600;font-size:14px;margin-bottom:14px">All Tasks</div>
+      <div id="task-list" style="max-height:280px;overflow-y:auto"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── PAGE: TIMER ─── -->
+<div id="page-timer" class="page">
+  <div class="page-header"><h1>⏱ Pomodoro Timer <span class="tag tag-green" style="font-size:13px;vertical-align:middle">Feature #6</span></h1><p>25-min focus + 5-min break cycles to maximize your productivity</p></div>
+  <div class="grid2">
+    <div class="card" style="text-align:center">
+      <div class="pomodoro-ring">
+        <svg width="160" height="160" viewBox="0 0 160 160">
+          <circle cx="80" cy="80" r="70" fill="none" stroke="var(--bg3)" stroke-width="10"/>
+          <circle cx="80" cy="80" r="70" fill="none" stroke="var(--accent)" stroke-width="10" stroke-linecap="round"
+            stroke-dasharray="439.8" id="timer-ring" stroke-dashoffset="0"/>
+        </svg>
+        <div class="center-time">
+          <div class="ct-time" id="timer-display">25:00</div>
+          <div class="ct-label" id="timer-mode-label">Focus</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:center;margin-top:20px">
+        <button class="btn btn-primary btn-lg" id="timer-btn" onclick="toggleTimer()">▶ Start</button>
+        <button class="btn btn-secondary" onclick="resetTimer()">↺ Reset</button>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:center;margin-top:12px">
+        <button class="btn btn-secondary btn-sm" onclick="setMode('focus')">Focus 25m</button>
+        <button class="btn btn-secondary btn-sm" onclick="setMode('short')">Break 5m</button>
+        <button class="btn btn-secondary btn-sm" onclick="setMode('long')">Long 15m</button>
+      </div>
+      <div style="margin-top:16px;font-size:13px;color:var(--muted)">Sessions completed today: <strong id="sessions-count" style="color:var(--text)">0</strong></div>
+    </div>
+    <div class="card">
+      <div style="font-weight:600;font-size:14px;margin-bottom:14px">Session Log</div>
+      <div class="timer-session-list" id="session-log">
+        <div style="text-align:center;color:var(--muted);font-size:13px;padding:20px">No sessions yet — start your first Pomodoro!</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── PAGE: GOALS ─── -->
+<div id="page-goals" class="page">
+  <div class="page-header"><h1>🎯 Goals & Targets <span class="tag tag-yellow" style="font-size:13px;vertical-align:middle">Feature #7</span></h1><p>Set exam goals and track your progress toward them</p></div>
+  <div class="grid2">
+    <div class="card">
+      <div style="font-weight:600;font-size:14px;margin-bottom:12px">Set New Goal</div>
+      <div class="form-group"><label>Goal Description</label><input type="text" id="goal-desc" placeholder="e.g. Score 90%+ on Physics final"></div>
+      <div class="form-group"><label>Target Date</label><input type="text" id="goal-date" placeholder="e.g. June 15, 2025"></div>
+      <div class="form-group"><label>Target Score (%)</label><input type="number" id="goal-score" min="0" max="100" placeholder="e.g. 90"></div>
+      <button class="btn btn-primary" onclick="addGoal()">+ Set Goal</button>
+    </div>
+    <div class="card">
+      <div style="font-weight:600;font-size:14px;margin-bottom:14px">My Goals</div>
+      <div id="goals-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── PAGE: ANALYTICS ─── -->
+<div id="page-analytics" class="page">
+  <div class="page-header"><h1>📈 Analytics <span class="tag tag-blue" style="font-size:13px;vertical-align:middle">Feature #8</span></h1><p>Track your performance trends and study habits over time</p></div>
+  <div class="grid4" style="margin-bottom:20px">
+    <div class="stat-card"><div class="stat-label">Avg Score</div><div class="stat-val" style="color:var(--green)">78%</div></div>
+    <div class="stat-card"><div class="stat-label">Best Subject</div><div class="stat-val" style="color:var(--accent);font-size:16px;margin-top:8px">Math</div></div>
+    <div class="stat-card"><div class="stat-label">Weak Subject</div><div class="stat-val" style="color:var(--red);font-size:16px;margin-top:8px">History</div></div>
+    <div class="stat-card"><div class="stat-label">Study Days</div><div class="stat-val">22</div></div>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <div style="font-weight:600;font-size:14px;margin-bottom:4px">Weekly Quiz Scores (%)</div>
+      <div class="bar-chart" id="score-chart"></div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:4px">
+        <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+      </div>
+    </div>
+    <div class="card">
+      <div style="font-weight:600;font-size:14px;margin-bottom:14px">Subject Accuracy</div>
+      <div id="subj-accuracy"></div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:14px">
+    <div style="font-weight:600;font-size:14px;margin-bottom:14px">Study Heatmap — This Month</div>
+    <div id="heatmap" style="display:flex;flex-wrap:wrap;gap:5px"></div>
+  </div>
+</div>
+
+<!-- ─── PAGE: WRONG ANSWERS ─── -->
+<div id="page-wrong" class="page">
+  <div class="page-header"><h1>⚠️ Weak Points <span class="tag tag-red" style="font-size:13px;vertical-align:middle">Feature #9</span></h1><p>Questions you've answered incorrectly — focus here to improve</p></div>
+  <div class="card" style="margin-bottom:14px">
+    <div style="display:flex;gap:10px;margin-bottom:16px">
+      <button class="btn btn-secondary btn-sm" onclick="filterWrong('all')">All</button>
+      <button class="btn btn-secondary btn-sm" onclick="filterWrong('Math')">Math</button>
+      <button class="btn btn-secondary btn-sm" onclick="filterWrong('Science')">Science</button>
+      <button class="btn btn-secondary btn-sm" onclick="filterWrong('History')">History</button>
+    </div>
+    <div id="wrong-list"></div>
+  </div>
+  <div class="card">
+    <div style="font-weight:600;font-size:14px;margin-bottom:14px">Add to Review</div>
+    <div class="form-group"><label>Question I Got Wrong</label><input type="text" id="wrong-q-input" placeholder="e.g. What is the powerhouse of the cell?"></div>
+    <div class="form-group"><label>Correct Answer</label><input type="text" id="wrong-a-input" placeholder="e.g. Mitochondria"></div>
+    <div class="form-group"><label>Subject</label>
+      <select id="wrong-subj"><option>Math</option><option>Science</option><option>History</option><option>Literature</option></select>
+    </div>
+    <button class="btn btn-danger btn-sm" onclick="addWrong()">Add to Weak Points</button>
+  </div>
+</div>
+
+<!-- ─── PAGE: MIND MAP ─── -->
+<div id="page-mindmap" class="page">
+  <div class="page-header"><h1>🗺 Mind Map <span class="tag tag-purple" style="font-size:13px;vertical-align:middle">Feature #10</span></h1><p>Visual concept mapping — build knowledge trees</p></div>
+  <div class="card" style="margin-bottom:14px">
+    <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+      <input type="text" id="mm-topic" placeholder="Central topic" style="flex:1;min-width:160px">
+      <input type="text" id="mm-branch" placeholder="Branch/subtopic" style="flex:1;min-width:160px">
+      <button class="btn btn-primary" onclick="addBranch()">+ Add Branch</button>
+      <button class="btn btn-secondary" onclick="clearMindmap()">Clear</button>
+    </div>
+    <div id="mindmap-canvas"></div>
+  </div>
+</div>
+
+<!-- ─── PAGE: CONCEPT DICTIONARY ─── -->
+<div id="page-dictionary" class="page">
+  <div class="page-header"><h1>📖 Concept Dictionary <span class="tag tag-blue" style="font-size:13px;vertical-align:middle">Feature #11</span></h1><p>Build your own personal glossary of key terms and definitions</p></div>
+  <div class="grid2">
+    <div class="card">
+      <div style="font-weight:600;font-size:14px;margin-bottom:12px">Add Term</div>
+      <div class="form-group"><label>Term / Concept</label><input type="text" id="dict-term" placeholder="e.g. Mitosis"></div>
+      <div class="form-group"><label>Definition</label><textarea id="dict-def" rows="3" placeholder="e.g. The process of cell division resulting in two identical daughter cells..."></textarea></div>
+      <div class="form-group"><label>Subject</label>
+        <select id="dict-subj"><option>Mathematics</option><option>Science</option><option>History</option><option>Literature</option><option>Language</option><option>Other</option></select>
+      </div>
+      <button class="btn btn-primary" onclick="addConcept()">+ Add Term</button>
+    </div>
+    <div class="card">
+      <div style="font-weight:600;font-size:14px;margin-bottom:10px">Search Dictionary</div>
+      <input type="text" id="dict-search" placeholder="Search terms..." oninput="renderDict()" style="margin-bottom:14px">
+      <div id="dict-list" style="max-height:380px;overflow-y:auto"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── PAGE: FOCUS MODE ─── -->
+<div id="page-focus" class="page">
+  <div class="page-header"><h1>🎧 Focus Mode <span class="tag tag-blue" style="font-size:13px;vertical-align:middle">Feature #12</span></h1><p>Optimize your environment for maximum concentration</p></div>
+  <div class="grid2">
+    <div class="card">
+      <div style="font-weight:600;font-size:14px;margin-bottom:14px">🎵 Ambient Sounds</div>
+      <div id="sound-options"></div>
+    </div>
+    <div class="card">
+      <div style="font-weight:600;font-size:14px;margin-bottom:14px">🧠 Focus Toggles</div>
+      <div id="focus-toggles"></div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:14px">
+    <div style="font-weight:600;font-size:14px;margin-bottom:14px">📐 Study Technique Guide</div>
+    <div id="technique-guide"></div>
+  </div>
+</div>
+
+<!-- ─── PAGE: ACHIEVEMENTS ─── -->
+<div id="page-achievements" class="page">
+  <div class="page-header"><h1>🏆 Achievements <span class="tag tag-yellow" style="font-size:13px;vertical-align:middle">Feature #13</span></h1><p>Unlock badges as you study — gamified motivation!</p></div>
+  <div id="achievements-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px"></div>
+</div>
+
+</div><!-- end #main -->
+
+<script>
+// ─── STATE ───
+const state = {
+  flashcards: [],
+  fcIndex: 0,
+  fcFlipped: false,
+  notes: [],
+  formulas: [],
+  tasks: [],
+  goals: [],
+  wrongAnswers: [],
+  mindmap: { center: '', branches: [] },
+  timer: { running: false, seconds: 25*60, mode: 'focus', interval: null, sessions: 0 },
+  concepts: [],
+  quizHistory: [],
+  cardsReviewed: 0,
+  quizScores: [],
+  xp: 0,
+  streak: 0,
+  quiz: { questions: [], current: 0, score: 0, answered: false }
+};
+
+// Quiz bank
+const quizBank = {
+  Mathematics: [
+    { q: "What is the derivative of sin(x)?", opts: ["cos(x)", "-cos(x)", "tan(x)", "-sin(x)"], ans: 0 },
+    { q: "What does the quadratic formula solve?", opts: ["Inequalities", "Quadratic equations", "Linear systems", "Trigonometry"], ans: 1 },
+    { q: "What is 2⁸?", opts: ["128", "256", "512", "64"], ans: 1 },
+    { q: "What is the slope formula?", opts: ["(y2-y1)/(x2-x1)", "(x2-x1)/(y2-y1)", "y=mx+b", "Δy × Δx"], ans: 0 },
+    { q: "Area of a circle?", opts: ["2πr", "πr²", "πd", "2πr²"], ans: 1 }
+  ],
+  Science: [
+    { q: "What organelle produces energy in cells?", opts: ["Nucleus", "Ribosome", "Mitochondria", "Golgi apparatus"], ans: 2 },
+    { q: "What is Newton's first law?", opts: ["F=ma", "Action-reaction", "Law of Inertia", "Gravity law"], ans: 2 },
+    { q: "What is the atomic number of Carbon?", opts: ["6", "12", "14", "8"], ans: 0 },
+    { q: "What process do plants use to make food?", opts: ["Respiration", "Photosynthesis", "Digestion", "Fermentation"], ans: 1 },
+    { q: "DNA stands for?", opts: ["Deoxyribonucleic Acid", "Diribonucleic Acid", "Dextrose Nanocarbon Acid", "Diphosphate Nitrogen Acid"], ans: 0 }
+  ],
+  History: [
+    { q: "In what year did World War II end?", opts: ["1943", "1944", "1945", "1946"], ans: 2 },
+    { q: "Who was the first U.S. President?", opts: ["John Adams", "Thomas Jefferson", "George Washington", "Benjamin Franklin"], ans: 2 },
+    { q: "The French Revolution began in?", opts: ["1776", "1789", "1799", "1815"], ans: 1 },
+    { q: "Who wrote the Declaration of Independence (primary author)?", opts: ["Benjamin Franklin", "John Adams", "Thomas Jefferson", "George Washington"], ans: 2 },
+    { q: "The Berlin Wall fell in?", opts: ["1987", "1988", "1989", "1990"], ans: 2 }
+  ],
+  Literature: [
+    { q: "Who wrote 'Romeo and Juliet'?", opts: ["Charles Dickens", "William Shakespeare", "Jane Austen", "Mark Twain"], ans: 1 },
+    { q: "In '1984', who is the antagonist?", opts: ["Winston Smith", "Julia", "Big Brother", "O'Brien"], ans: 2 },
+    { q: "'To Kill a Mockingbird' was written by?", opts: ["Toni Morrison", "Harper Lee", "Truman Capote", "Maya Angelou"], ans: 1 },
+    { q: "What literary device repeats consonant sounds?", opts: ["Assonance", "Alliteration", "Metaphor", "Simile"], ans: 1 },
+    { q: "A story within a story is called?", opts: ["Subplot", "Frame narrative", "Flashback", "Foreshadowing"], ans: 1 }
+  ]
+};
+
+// ─── NAVIGATION ───
+function nav(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => { if (n.getAttribute('onclick') && n.getAttribute('onclick').includes("'"+page+"'")) n.classList.add('active'); });
+  const titles = { dashboard:'Dashboard', flashcards:'Flashcards', quiz:'Quiz Mode', notes:'Smart Notes', formulas:'Formula Sheet', planner:'Study Planner', timer:'Pomodoro Timer', goals:'Goals & Targets', analytics:'Analytics', wrong:'Weak Points', mindmap:'Mind Map', dictionary:'Concept Dictionary', focus:'Focus Mode', achievements:'Achievements' };
+  document.getElementById('page-title').textContent = titles[page] || page;
+  if (page === 'planner') renderPlanner();
+  if (page === 'analytics') renderAnalytics();
+  if (page === 'wrong') renderWrong();
+  if (page === 'achievements') renderAchievements();
+  if (page === 'mindmap') renderMindmap();
+  if (page === 'dictionary') renderDict();
+  if (page === 'focus') renderFocus();
+  if (page === 'dashboard') renderDashboard();
+  if (page === 'formulas') renderFormulas();
+  if (page === 'notes') renderNotes();
+  if (page === 'goals') renderGoals();
+  if (page === 'flashcards') renderFlashcard();
+}
+
+// ─── LIVE CLOCK ───
+function updateClock() {
+  const now = new Date();
+  document.getElementById('live-clock').textContent = now.toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
+setInterval(updateClock, 1000); updateClock();
+
+// ─── TOAST ───
+function toast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = type ? `show ${type}` : 'show';
+  setTimeout(() => t.className = '', 2500);
+}
+
+// ─── XP ───
+function addXP(n) {
+  state.xp += n;
+  if (state.xp >= 500) { state.xp = state.xp - 500; toast('🎉 Level Up!', 'success'); }
+  document.getElementById('xp-count').textContent = state.xp + ' / 500';
+  document.getElementById('xp-fill').style.width = (state.xp/5) + '%';
+}
+
+// ─── DASHBOARD ───
+function renderDashboard() {
+  const now = new Date();
+  const hour = now.getHours();
+  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  const emojis = hour < 12 ? '☀️' : hour < 17 ? '📚' : '🌙';
+  document.getElementById('dash-greeting').textContent = `${greeting}! Let's study ${emojis}`;
+  const dayName = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+  document.getElementById('dash-subgreeting').textContent = `Today is ${dayName}`;
+
+  // Live stats
+  document.getElementById('stat-cards').textContent = state.cardsReviewed;
+  const totalTasks = state.tasks.length;
+  const doneTasks = state.tasks.filter(t=>t.done).length;
+  document.getElementById('stat-tasks').textContent = doneTasks;
+  document.getElementById('stat-tasks-sub').textContent = `of ${totalTasks} task${totalTasks!==1?'s':''}`;
+  document.getElementById('stat-xp').textContent = state.xp + (state.xp >= 500 ? '' : '');
+  document.getElementById('stat-level').textContent = `Level ${Math.floor(state.xp/500)+1}`;
+  if (state.quizScores.length) {
+    const avg = Math.round(state.quizScores.reduce((a,b)=>a+b,0)/state.quizScores.length);
+    document.getElementById('stat-accuracy').textContent = avg + '%';
+    document.getElementById('stat-accuracy-sub').textContent = `${state.quizScores.length} quiz${state.quizScores.length!==1?'zes':' taken'}`;
+  }
+
+  // Subject progress from quiz scores per subject (or empty)
+  const subjColors = { Mathematics:'#7c6ff7', Science:'#4fc8a0', History:'#f7b067', Literature:'#f76fa0', Language:'#67c5f7' };
+  const subjData = {};
+  state.quizHistory.forEach(h => {
+    if (!subjData[h.subj]) subjData[h.subj] = [];
+    subjData[h.subj].push(h.pct);
+  });
+  const subjNames = Object.keys(subjData);
+  document.getElementById('subj-progress').innerHTML = subjNames.length ? subjNames.map(s => {
+    const avg = Math.round(subjData[s].reduce((a,b)=>a+b,0)/subjData[s].length);
+    return `<div style="margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px"><span>${s}</span><span style="color:var(--muted)">${avg}%</span></div>
+      <div class="progress-track"><div class="progress-fill" style="width:${avg}%;background:${subjColors[s]||'var(--accent)'}"></div></div>
+    </div>`;
+  }).join('') : '<div style="color:var(--muted);font-size:13px;padding:10px 0">Complete a quiz to see subject progress here.</div>';
+
+  // Today's tasks (matching today's day name abbrev)
+  const todayAbbr = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][now.getDay()];
+  const todayTasks = state.tasks.filter(t => t.day === todayAbbr).slice(0,5);
+  document.getElementById('today-tasks').innerHTML = todayTasks.length ? todayTasks.map(t => `
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="toggleTask(${state.tasks.indexOf(t)})">
+      <div style="width:16px;height:16px;border-radius:4px;border:1.5px solid var(--border2);flex-shrink:0;background:${t.done?'var(--green)':'transparent'}"></div>
+      <span style="font-size:13.5px;${t.done?'text-decoration:line-through;opacity:0.5':''}">${t.text}</span>
+      <span class="tag tag-${t.priority==='High'?'red':t.priority==='Medium'?'yellow':'blue'}" style="margin-left:auto;font-size:10px">${t.priority}</span>
+    </div>`).join('') : '<div style="color:var(--muted);font-size:13px;padding:8px 0">No tasks for today. Add some in the Planner!</div>';
+
+  document.getElementById('dash-fc-count').textContent = state.flashcards.length
+    ? `${state.flashcards.length} card${state.flashcards.length!==1?'s':''} in your deck`
+    : 'No cards yet — add some!';
+}
+
+// ─── FLASHCARDS ───
+function renderFlashcard() {
+  const cards = state.flashcards;
+  if (!cards.length) {
+    document.getElementById('fc-front').textContent = 'Add a card to get started!';
+    document.getElementById('fc-back').textContent = '—';
+    document.getElementById('fc-counter').textContent = 'No cards yet';
+    return;
+  }
+  const i = state.fcIndex % cards.length;
+  document.getElementById('fc-front').textContent = cards[i].q;
+  document.getElementById('fc-back').textContent = cards[i].a;
+  document.getElementById('fc-counter').textContent = `Card ${i+1} of ${cards.length} — ${cards[i].subj}`;
+  document.getElementById('fc-total').textContent = cards.length;
+  document.getElementById('fc-mastered').textContent = cards.filter(c=>c.rating==='easy').length;
+  document.getElementById('flashcard').classList.remove('flipped');
+  state.fcFlipped = false;
+}
+function flipCard() {
+  state.fcFlipped = !state.fcFlipped;
+  document.getElementById('flashcard').classList.toggle('flipped', state.fcFlipped);
+}
+function nextCard() { state.fcIndex = (state.fcIndex+1) % state.flashcards.length; renderFlashcard(); addXP(2); }
+function prevCard() { state.fcIndex = (state.fcIndex-1+state.flashcards.length) % state.flashcards.length; renderFlashcard(); }
+function rateCard(r) {
+  state.flashcards[state.fcIndex % state.flashcards.length].rating = r;
+  if (r === 'easy') { toast('✅ Marked as mastered!', 'success'); addXP(5); }
+  nextCard();
+}
+function addFlashcard() {
+  const q = document.getElementById('fc-q').value.trim();
+  const a = document.getElementById('fc-a').value.trim();
+  const s = document.getElementById('fc-subj').value;
+  if (!q || !a) { toast('Enter both question and answer!', 'warn'); return; }
+  state.flashcards.push({ q, a, subj: s, rating: null });
+  document.getElementById('fc-q').value = ''; document.getElementById('fc-a').value = '';
+  renderFlashcard(); toast('Card added! 🃏', 'success'); addXP(10);
+}
+function shuffleCards() { for(let i=state.flashcards.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[state.flashcards[i],state.flashcards[j]]=[state.flashcards[j],state.flashcards[i]];} state.fcIndex=0; renderFlashcard(); toast('Cards shuffled! 🔀'); }
+function resetCards() { state.flashcards.forEach(c=>c.rating=null); state.fcIndex=0; renderFlashcard(); toast('Cards reset!'); }
+
+// ─── QUIZ ───
+function startQuiz() {
+  const subj = document.getElementById('quiz-subj').value;
+  const num = parseInt(document.getElementById('quiz-num').value);
+  const pool = (quizBank[subj] || []).slice(0, num);
+  if (!pool.length) { toast('No questions for this subject!', 'warn'); return; }
+  const shuffled = [...pool].sort(() => Math.random()-0.5).slice(0, Math.min(num, pool.length));
+  state.quiz = { questions: shuffled, current: 0, score: 0, answered: false };
+  renderQuizQ();
+}
+function renderQuizQ() {
+  const q = state.quiz.questions[state.quiz.current];
+  if (!q) { renderQuizResult(); return; }
+  state.quiz.answered = false;
+  const prog = `<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:14px"><span>Q${state.quiz.current+1} / ${state.quiz.questions.length}</span><span>Score: ${state.quiz.score}/${state.quiz.current}</span></div>`;
+  const pct = ((state.quiz.current)/state.quiz.questions.length)*100;
+  document.getElementById('quiz-area').innerHTML = `
+    ${prog}
+    <div class="progress-track" style="margin-bottom:18px"><div class="progress-fill" style="width:${pct}%;background:var(--accent)"></div></div>
+    <div class="quiz-question">${q.q}</div>
+    <div class="quiz-opts">${q.opts.map((o,i)=>`<button class="quiz-opt" id="opt-${i}" onclick="answerQuiz(${i})">${String.fromCharCode(65+i)}. ${o}</button>`).join('')}</div>
+    <div id="quiz-feedback"></div>`;
+}
+function answerQuiz(i) {
+  if (state.quiz.answered) return;
+  state.quiz.answered = true;
+  const q = state.quiz.questions[state.quiz.current];
+  const correct = i === q.ans;
+  document.querySelectorAll('.quiz-opt').forEach((el,idx) => { el.disabled=true; if(idx===q.ans) el.classList.add('correct'); if(idx===i && !correct) el.classList.add('wrong'); });
+  if (correct) { state.quiz.score++; addXP(10); }
+  document.getElementById('quiz-feedback').innerHTML = `<div class="quiz-feedback" style="background:${correct?'rgba(79,200,160,0.12)':'rgba(247,111,111,0.12)'};border:1px solid ${correct?'var(--green)':'var(--red)'};">${correct?'✅ Correct!':'❌ Incorrect — Correct answer: '+q.opts[q.ans]}</div>
+    <button class="btn btn-primary" style="margin-top:12px" onclick="nextQuizQ()">Next Question →</button>`;
+}
+function nextQuizQ() { state.quiz.current++; renderQuizQ(); }
+function renderQuizResult() {
+  const pct = Math.round((state.quiz.score/state.quiz.questions.length)*100);
+  const grade = pct >= 90 ? '🏆 Excellent!' : pct >= 70 ? '👍 Good job!' : pct >= 50 ? '📚 Keep studying!' : '💪 More practice needed!';
+  document.getElementById('quiz-area').innerHTML = `
+    <div style="text-align:center;padding:20px">
+      <div style="font-size:48px;margin-bottom:12px">${pct>=70?'🎉':'📚'}</div>
+      <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:700;color:${pct>=70?'var(--green)':'var(--yellow)'}">${pct}%</div>
+      <div style="font-size:16px;margin-top:8px">${state.quiz.score} / ${state.quiz.questions.length} correct</div>
+      <div style="font-size:14px;color:var(--muted);margin-top:6px">${grade}</div>
+      <button class="btn btn-primary btn-lg" style="margin-top:20px" onclick="startQuiz()">Try Again</button>
+    </div>`;
+  addXP(pct >= 70 ? 25 : 10);
+}
+
+// ─── NOTES ───
+function renderNotes(filter='') {
+  const list = state.notes.filter(n => !filter || n.title.toLowerCase().includes(filter) || n.content.toLowerCase().includes(filter));
+  document.getElementById('notes-list').innerHTML = list.length ? list.map((n,i) => `
+    <div class="note-card" onclick="viewNote(${state.notes.indexOf(n)})">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div class="note-title">${n.title}</div>
+        <span class="tag tag-${n.subj==='Science'?'green':n.subj==='History'?'yellow':'purple'}" style="flex-shrink:0;margin-left:8px">${n.subj}</span>
+      </div>
+      <div class="note-preview">${n.content}</div>
+      <div class="note-meta">${n.date}</div>
+    </div>`).join('') : '<div class="empty-state"><div class="icon">📝</div>No notes yet — create one!</div>';
+}
+function searchNotes() { renderNotes(document.getElementById('note-search').value.toLowerCase()); }
+function saveNote() {
+  const t = document.getElementById('note-title').value.trim();
+  const c = document.getElementById('note-content').value.trim();
+  const s = document.getElementById('note-subj').value;
+  if (!t || !c) { toast('Title and content required!', 'warn'); return; }
+  state.notes.unshift({ title:t, subj:s, content:c, date:'Just now' });
+  document.getElementById('note-title').value=''; document.getElementById('note-content').value='';
+  renderNotes(); toast('Note saved! 📝', 'success'); addXP(15);
+}
+function viewNote(i) {
+  const n = state.notes[i];
+  document.getElementById('note-title').value = n.title;
+  document.getElementById('note-content').value = n.content;
+  toast('Note loaded for editing');
+}
+
+// ─── FORMULAS ───
+function renderFormulas(filter='') {
+  const list = state.formulas.filter(f => !filter || f.formula.toLowerCase().includes(filter) || f.desc.toLowerCase().includes(filter));
+  document.getElementById('formula-list').innerHTML = list.map(f => `
+    <div class="formula-item">
+      <div class="formula-text">${f.formula}</div>
+      <div class="formula-desc">${f.desc}</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px">${f.subj}</div>
+    </div>`).join('') || '<div style="color:var(--muted);font-size:13px">No formulas found.</div>';
+}
+function filterFormulas() { renderFormulas(document.getElementById('formula-search').value.toLowerCase()); }
+function addFormula() {
+  const f = document.getElementById('f-formula').value.trim();
+  const d = document.getElementById('f-desc').value.trim();
+  const s = document.getElementById('f-subj').value;
+  if (!f) { toast('Enter a formula!', 'warn'); return; }
+  state.formulas.unshift({ formula:f, desc:d, subj:s });
+  document.getElementById('f-formula').value=''; document.getElementById('f-desc').value='';
+  renderFormulas(); toast('Formula added! 🔢', 'success'); addXP(8);
+}
+
+// ─── PLANNER ───
+function renderPlanner() {
+  const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const today = new Date();
+  const dayIdx = (today.getDay()+6)%7;
+  document.getElementById('week-range').textContent = 'Current Week';
+  document.getElementById('week-grid').innerHTML = days.map((d,i) => {
+    const tasks = state.tasks.filter(t=>t.day===d);
+    return `<div class="day-box${i===dayIdx?' today':''}">
+      <div class="day-label">${d}${i===dayIdx?' ★':''}</div>
+      ${tasks.map((t,ti)=>`<div class="day-task${t.done?' done':''}" onclick="toggleTask(${state.tasks.indexOf(t)})">${t.text.slice(0,18)}${t.text.length>18?'…':''}</div>`).join('')}
+    </div>`;
+  }).join('');
+  document.getElementById('task-list').innerHTML = state.tasks.map((t,i) => `
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+      <div onclick="toggleTask(${i})" style="width:16px;height:16px;border-radius:4px;border:1.5px solid var(--border2);cursor:pointer;flex-shrink:0;background:${t.done?'var(--green)':'transparent'}"></div>
+      <span style="font-size:13px;flex:1;${t.done?'text-decoration:line-through;opacity:0.5':''}">${t.text}</span>
+      <span style="font-size:11px;color:var(--muted)">${t.day}</span>
+      <span class="tag tag-${t.priority==='High'?'red':t.priority==='Medium'?'yellow':'blue'}" style="font-size:10px">${t.priority}</span>
+      <button onclick="deleteTask(${i})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px">×</button>
+    </div>`).join('');
+}
+function addTask() {
+  const t = document.getElementById('task-input').value.trim();
+  const d = document.getElementById('task-day').value;
+  const p = document.getElementById('task-priority').value;
+  if (!t) { toast('Enter a task!', 'warn'); return; }
+  state.tasks.push({ text:t, day:d, priority:p, done:false });
+  document.getElementById('task-input').value = '';
+  renderPlanner(); toast('Task added! ✓', 'success'); addXP(5);
+}
+function toggleTask(i) { state.tasks[i].done = !state.tasks[i].done; renderPlanner(); if(state.tasks[i].done){addXP(10);toast('Task done! 🎉','success');} }
+function deleteTask(i) { state.tasks.splice(i,1); renderPlanner(); }
+
+// ─── TIMER ───
+const MODES = { focus:{label:'Focus',sec:25*60}, short:{label:'Short Break',sec:5*60}, long:{label:'Long Break',sec:15*60} };
+function toggleTimer() {
+  if (state.timer.running) {
+    clearInterval(state.timer.interval); state.timer.running = false;
+    document.getElementById('timer-btn').textContent = '▶ Resume';
+  } else {
+    state.timer.running = true;
+    document.getElementById('timer-btn').textContent = '⏸ Pause';
+    state.timer.interval = setInterval(() => {
+      if (state.timer.seconds <= 0) {
+        clearInterval(state.timer.interval); state.timer.running = false;
+        document.getElementById('timer-btn').textContent = '▶ Start';
+        state.timer.sessions++;
+        document.getElementById('sessions-count').textContent = state.timer.sessions;
+        const log = document.getElementById('session-log');
+        const now = new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+        const entry = document.createElement('div'); entry.className='timer-session';
+        entry.innerHTML = `<span>${MODES[state.timer.mode].label}</span><span style="color:var(--muted)">${now}</span>`;
+        if (log.querySelector('.empty-state')) log.innerHTML = '';
+        log.insertBefore(entry, log.firstChild);
+        addXP(20); toast('⏱ Session complete! +20 XP', 'success');
+        setMode('focus'); return;
+      }
+      state.timer.seconds--;
+      updateTimerDisplay();
+    }, 1000);
+  }
+}
+function resetTimer() {
+  clearInterval(state.timer.interval); state.timer.running = false;
+  state.timer.seconds = MODES[state.timer.mode].sec;
+  document.getElementById('timer-btn').textContent = '▶ Start';
+  updateTimerDisplay();
+}
+function setMode(m) {
+  clearInterval(state.timer.interval); state.timer.running = false;
+  state.timer.mode = m; state.timer.seconds = MODES[m].sec;
+  document.getElementById('timer-mode-label').textContent = MODES[m].label;
+  document.getElementById('timer-btn').textContent = '▶ Start';
+  updateTimerDisplay();
+}
+function updateTimerDisplay() {
+  const s = state.timer.seconds;
+  const m = String(Math.floor(s/60)).padStart(2,'0');
+  const sec = String(s%60).padStart(2,'0');
+  document.getElementById('timer-display').textContent = `${m}:${sec}`;
+  const total = MODES[state.timer.mode].sec;
+  const pct = s/total;
+  const circumference = 2*Math.PI*70;
+  document.getElementById('timer-ring').style.strokeDashoffset = circumference*(1-pct);
+}
+updateTimerDisplay();
+
+// ─── GOALS ───
+function renderGoals() {
+  document.getElementById('goals-list').innerHTML = state.goals.map((g,i) => `
+    <div style="padding:12px 0;border-bottom:1px solid var(--border)">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+        <div style="font-size:14px;font-weight:500">${g.desc}</div>
+        <span class="tag tag-blue" style="font-size:10px;flex-shrink:0;margin-left:8px">${g.date}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:6px">
+        <span>Current: ${g.current}%</span><span>Target: ${g.target}%</span>
+      </div>
+      <div class="progress-track"><div class="progress-fill" style="width:${Math.min(100,(g.current/g.target)*100).toFixed(0)}%;background:${g.current>=g.target?'var(--green)':'var(--accent)'}"></div></div>
+    </div>`).join('') || '<div class="empty-state"><div class="icon">🎯</div>No goals set yet!</div>';
+}
+function addGoal() {
+  const d = document.getElementById('goal-desc').value.trim();
+  const dt = document.getElementById('goal-date').value.trim();
+  const s = parseInt(document.getElementById('goal-score').value)||80;
+  if (!d) { toast('Enter a goal description!', 'warn'); return; }
+  state.goals.push({ desc:d, date:dt||'TBD', target:s, current:0 });
+  document.getElementById('goal-desc').value=''; document.getElementById('goal-date').value=''; document.getElementById('goal-score').value='';
+  renderGoals(); toast('Goal set! 🎯', 'success'); addXP(10);
+}
+
+// ─── ANALYTICS ───
+function renderAnalytics() {
+  const scores = [65, 72, 78, 82, 75, 88, 79];
+  const maxScore = Math.max(...scores);
+  document.getElementById('score-chart').innerHTML = scores.map((s,i) => {
+    const h = Math.round((s/100)*90);
+    const clr = s>=80?'var(--green)':s>=65?'var(--accent)':'var(--yellow)';
+    return `<div class="bar-col"><div class="bar" style="height:${h}px;background:${clr}"></div><div class="bar-label">${s}%</div></div>`;
+  }).join('');
+
+  const subjects = [{n:'Mathematics',pct:85,clr:'var(--accent)'},{n:'Science',pct:78,clr:'var(--green)'},{n:'History',pct:52,clr:'var(--yellow)'},{n:'Literature',pct:71,clr:'var(--accent4)'}];
+  document.getElementById('subj-accuracy').innerHTML = subjects.map(s => `
+    <div style="margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px"><span>${s.n}</span><span style="color:var(--muted)">${s.pct}%</span></div>
+      <div class="progress-track"><div class="progress-fill" style="width:${s.pct}%;background:${s.clr}"></div></div>
+    </div>`).join('');
+
+  const heatmap = document.getElementById('heatmap');
+  heatmap.innerHTML = '';
+  for (let i=0; i<28; i++) {
+    const intensity = Math.random();
+    const color = intensity > 0.7 ? '#7c6ff7' : intensity > 0.4 ? 'rgba(124,111,247,0.4)' : intensity > 0.1 ? 'rgba(124,111,247,0.15)' : 'var(--bg3)';
+    const d = document.createElement('div');
+    d.style.cssText = `width:22px;height:22px;border-radius:4px;background:${color};title:Day ${i+1}`;
+    d.title = `Day ${i+1}: ${Math.round(intensity*4)}h studied`;
+    heatmap.appendChild(d);
+  }
+}
+
+// ─── WRONG ANSWERS ───
+function renderWrong(filter='all') {
+  const list = filter==='all' ? state.wrongAnswers : state.wrongAnswers.filter(w=>w.subj===filter);
+  document.getElementById('wrong-list').innerHTML = list.length ? list.map((w,i) => `
+    <div class="wrong-item">
+      <div>
+        <div class="wrong-q">${w.q}</div>
+        <div class="wrong-ans">✅ Correct: ${w.a}</div>
+        <span class="tag tag-${w.subj==='Math'?'purple':w.subj==='Science'?'green':'yellow'}" style="font-size:10px;margin-top:6px">${w.subj}</span>
+      </div>
+      <button onclick="removeWrong(${state.wrongAnswers.indexOf(w)})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;flex-shrink:0">×</button>
+    </div>`).join('') : '<div class="empty-state"><div class="icon">✅</div>No weak points here!</div>';
+}
+function filterWrong(f) { renderWrong(f); }
+function addWrong() {
+  const q = document.getElementById('wrong-q-input').value.trim();
+  const a = document.getElementById('wrong-a-input').value.trim();
+  const s = document.getElementById('wrong-subj').value;
+  if (!q || !a) { toast('Enter question and answer!', 'warn'); return; }
+  state.wrongAnswers.push({ q, a, subj:s });
+  document.getElementById('wrong-q-input').value=''; document.getElementById('wrong-a-input').value='';
+  renderWrong(); toast('Added to weak points!');
+}
+function removeWrong(i) { state.wrongAnswers.splice(i,1); renderWrong(); toast('Removed — great job mastering it!', 'success'); addXP(5); }
+
+// ─── MIND MAP ───
+const mmData = { center: 'Biology', branches: ['Cell Structure', 'Genetics', 'Evolution'] };
+function renderMindmap() {
+  const canvas = document.getElementById('mindmap-canvas');
+  canvas.innerHTML = '';
+  const W = canvas.offsetWidth || 600, H = 360;
+  const cx = W/2, cy = H/2;
+  
+  // Center node
+  const center = document.createElement('div');
+  center.style.cssText = `position:absolute;left:${cx-60}px;top:${cy-22}px;width:120px;height:44px;background:var(--accent);border-radius:22px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:#fff;`;
+  center.textContent = mmData.center;
+  canvas.appendChild(center);
+
+  const colors = ['#4fc8a0','#f7b067','#f76fa0','#67c5f7','#7c6ff7','#f76f6f'];
+  mmData.branches.forEach((b,i) => {
+    const angle = (i / mmData.branches.length) * 2 * Math.PI - Math.PI/2;
+    const radius = 130;
+    const bx = cx + Math.cos(angle)*radius;
+    const by = cy + Math.sin(angle)*radius;
+    
+    // Line
+    const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+    svg.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;';
+    const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1',cx); line.setAttribute('y1',cy);
+    line.setAttribute('x2',bx); line.setAttribute('y2',by);
+    line.setAttribute('stroke',colors[i%colors.length]); line.setAttribute('stroke-width','2');
+    line.setAttribute('stroke-dasharray','4 3');
+    svg.appendChild(line); canvas.appendChild(svg);
+
+    // Branch node
+    const node = document.createElement('div');
+    node.style.cssText = `position:absolute;left:${bx-55}px;top:${by-18}px;width:110px;height:36px;background:rgba(${colors[i%colors.length].replace('#','').match(/../g).map(x=>parseInt(x,16)).join(',')},0.2);border:1.5px solid ${colors[i%colors.length]};border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:12px;text-align:center;cursor:pointer;padding:4px;`;
+    node.style.color = colors[i%colors.length];
+    node.textContent = b;
+    canvas.appendChild(node);
+  });
+}
+function addBranch() {
+  const t = document.getElementById('mm-topic').value.trim();
+  const b = document.getElementById('mm-branch').value.trim();
+  if (t) mmData.center = t;
+  if (b) mmData.branches.push(b);
+  document.getElementById('mm-branch').value = '';
+  renderMindmap(); if(b) toast('Branch added! 🗺', 'success');
+}
+function clearMindmap() { mmData.branches = []; renderMindmap(); }
+
+// ─── CONCEPT DICTIONARY ───
+function renderDict() {
+  const filter = (document.getElementById('dict-search')?.value || '').toLowerCase();
+  const list = state.concepts.filter(c => !filter || c.term.toLowerCase().includes(filter) || c.def.toLowerCase().includes(filter));
+  const el = document.getElementById('dict-list');
+  if (!el) return;
+  el.innerHTML = list.length ? list.map((c,i) => `
+    <div class="concept-item">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div class="concept-term">${c.term}</div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <span class="tag tag-${c.subj==='Science'?'green':c.subj==='Mathematics'?'purple':c.subj==='History'?'yellow':'blue'}" style="font-size:10px">${c.subj}</span>
+          <button onclick="removeConcept(${state.concepts.indexOf(c)})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;line-height:1">×</button>
+        </div>
+      </div>
+      <div class="concept-def">${c.def}</div>
+    </div>`).join('') : '<div class="empty-state"><div class="icon">📖</div>No terms yet — add your first one!</div>';
+}
+function addConcept() {
+  const t = document.getElementById('dict-term').value.trim();
+  const d = document.getElementById('dict-def').value.trim();
+  const s = document.getElementById('dict-subj').value;
+  if (!t || !d) { toast('Enter a term and definition!', 'warn'); return; }
+  state.concepts.unshift({ term:t, def:d, subj:s });
+  document.getElementById('dict-term').value=''; document.getElementById('dict-def').value='';
+  renderDict(); toast('Term added! 📖', 'success'); addXP(8);
+}
+function removeConcept(i) { state.concepts.splice(i,1); renderDict(); toast('Term removed'); }
+
+// ─── FOCUS MODE ───
+function renderFocus() {
+  const sounds = [
+    { name: 'Lo-Fi Beats', icon: '🎵', desc: 'Chill hip-hop instrumentals' },
+    { name: 'White Noise', icon: '🌊', desc: 'Steady background noise' },
+    { name: 'Forest Rain', icon: '🌧', desc: 'Gentle rainfall ambience' },
+    { name: 'Café Sounds', icon: '☕', desc: 'Busy coffee shop ambience' },
+    { name: 'Binaural Beats', icon: '🧠', desc: 'Focus-enhancing frequencies' },
+    { name: 'Silence', icon: '🔇', desc: 'Pure quiet' }
+  ];
+  document.getElementById('sound-options').innerHTML = sounds.map((s,i) => `
+    <div onclick="selectSound(${i})" id="sound-${i}" style="display:flex;align-items:center;gap:12px;padding:10px;border-radius:8px;cursor:pointer;border:1px solid var(--border);margin-bottom:8px;transition:all 0.15s">
+      <span style="font-size:20px">${s.icon}</span>
+      <div><div style="font-size:13px;font-weight:500">${s.name}</div><div style="font-size:12px;color:var(--muted)">${s.desc}</div></div>
+    </div>`).join('');
+
+  const toggles = [
+    { name: 'Block Social Media', sub: 'Hide distraction patterns' },
+    { name: 'Grayscale Mode', sub: 'Reduce visual stimulation' },
+    { name: 'Notifications Off', sub: 'Study without interruptions' },
+    { name: 'Eye Break Reminders', sub: 'Every 20 mins look away' }
+  ];
+  document.getElementById('focus-toggles').innerHTML = toggles.map((t,i) => `
+    <div class="conc-toggle">
+      <div><div class="toggle-label">${t.name}</div><div class="toggle-sub">${t.sub}</div></div>
+      <label class="switch"><input type="checkbox" onchange="toggleFocus(this,'${t.name}')"><span class="slider-sw"></span></label>
+    </div>`).join('');
+
+  const techniques = [
+    { name: 'Pomodoro', time: '25+5 min', desc: 'Work 25 min, break 5 min. After 4 rounds, take a 30-min break.' },
+    { name: 'Active Recall', time: 'Variable', desc: "Test yourself instead of rereading. Close the book and write what you remember." },
+    { name: 'Spaced Repetition', time: 'Daily', desc: 'Review material at increasing intervals: 1 day → 3 days → 1 week → 2 weeks.' },
+    { name: 'Feynman Technique', time: '30+ min', desc: 'Explain the concept in simple words as if teaching a child. Gaps reveal what to review.' }
+  ];
+  document.getElementById('technique-guide').innerHTML = techniques.map(t => `
+    <div style="padding:12px 0;border-bottom:1px solid var(--border)">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+        <span style="font-weight:600;font-size:14px">${t.name}</span>
+        <span class="tag tag-blue" style="font-size:10px">${t.time}</span>
+      </div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.5">${t.desc}</div>
+    </div>`).join('');
+}
+let selectedSound = -1;
+function selectSound(i) {
+  document.querySelectorAll('[id^=sound-]').forEach(el => el.style.borderColor='var(--border)');
+  document.getElementById('sound-'+i).style.borderColor='var(--accent)';
+  selectedSound = i; toast('🎵 Sound selected — play in your browser/app');
+}
+function toggleFocus(el, name) { toast(el.checked ? `✓ ${name} enabled` : `${name} disabled`); }
+
+// ─── ACHIEVEMENTS ───
+function renderAchievements() {
+  const all = [
+    { name:'First Steps', desc:'Create your first flashcard', icon:'🃏', earned:true },
+    { name:'Quiz Starter', desc:'Complete your first quiz', icon:'❓', earned:true },
+    { name:'Note Taker', desc:'Save 5 study notes', icon:'📝', earned:false },
+    { name:'Week Warrior', desc:'7-day study streak', icon:'🔥', earned:true },
+    { name:'Pomodoro Pro', desc:'Complete 10 Pomodoro sessions', icon:'⏱', earned:false },
+    { name:'Math Master', desc:'Score 90%+ on a Math quiz', icon:'🔢', earned:false },
+    { name:'Science Whiz', desc:'Master 20 Science cards', icon:'🔬', earned:true },
+    { name:'Goal Setter', desc:'Set 3 study goals', icon:'🎯', earned:false },
+    { name:'Mind Mapper', desc:'Create a mind map', icon:'🗺', earned:false },
+    { name:'Top Scorer', desc:'Score 100% on any quiz', icon:'🏆', earned:false },
+    { name:'Night Owl', desc:'Study after 10PM', icon:'🦉', earned:true },
+    { name:'Bookworm', desc:'Read 10 notes in one session', icon:'📚', earned:false }
+  ];
+  document.getElementById('achievements-grid').innerHTML = all.map(a => `
+    <div class="card" style="text-align:center;opacity:${a.earned?1:0.4};transition:opacity 0.2s">
+      <div style="font-size:36px;margin-bottom:8px">${a.icon}</div>
+      <div style="font-size:14px;font-weight:600">${a.name}</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:4px">${a.desc}</div>
+      ${a.earned?`<div style="margin-top:10px"><span class="tag tag-green" style="font-size:11px">✓ Earned</span></div>`:`<div style="margin-top:10px"><span class="tag" style="font-size:11px;background:var(--bg3);color:var(--muted)">Locked</span></div>`}
+    </div>`).join('');
+}
+
+// ─── INIT ───
+renderDashboard();
+renderFlashcard();
+renderNotes();
+renderFormulas();
+renderGoals();
+</script>
+</body>
+</html>
